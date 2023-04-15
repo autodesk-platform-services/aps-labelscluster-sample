@@ -1,6 +1,6 @@
 var spritesPotisions = [
   {x:36.96496028542259, y:11.352864968169698, z:-10.751784462198192  },
-  {x:38.95906641668701, y:12.143988633347313, z:-10.517749664580908  },
+  {x:38.95906641668701, y:12.143988633347313, z:-10.517749664580908 },
   {x:41.04827495095174, y:13.776719326962533, z:-9.879429547278045  },
   {x:41.520042487991795, y:19.872909110055325, z:-9.464928150177002  },
   {x:28.53426648995696, y:16.501951441259067, z:-10.896670977183321 },
@@ -205,13 +205,38 @@ class LoadSpritesExtension extends Autodesk.Viewing.Extension {
   constructor(viewer, options) {
     super(viewer, options);
     this._button = null;
+    //treshold in pixels
+    this.treshold = 40;
     this._onObjectTreeCreated = (ev) => this.onModelLoaded(ev.model);
+    this.viewer.addEventListener(Autodesk.Viewing.CAMERA_CHANGE_EVENT, this.groupAndRenderSprites.bind(this));
   }
 
   async onModelLoaded(model) {
     this.dataVizExtn = await this.viewer.getExtension("Autodesk.DataVisualization");
     await this.prepareDataViz();
-    this.renderSprites(9999);
+    // let indexGroups = this.findIndexGroups();
+    // this.renderSprites(9999, indexGroups);
+  }
+
+  groupAndRenderSprites(){
+    let indexGroups = this.findIndexGroups();
+    this.renderSprites(9999, indexGroups);
+  }
+
+  findIndexGroups(){
+    let indexGroups = [];
+    let indexesTaken = [];
+    for(let i = 0; i < spritesPotisions.length; i++){
+      if(!indexesTaken.includes(i)){
+        let currentPosition = this.viewer.worldToClient(spritesPotisions[i]);
+        let notTakenPoints = spritesPotisions.filter(p => !indexesTaken.includes(spritesPotisions.indexOf(p)));
+        let pointsGroup = notTakenPoints.filter(p => this.viewer.worldToClient(p).distanceTo(currentPosition) < this.treshold);
+        let indexGroup = pointsGroup.map(p => spritesPotisions.indexOf(p));
+        indexGroups.push(indexGroup);
+        indexesTaken.push(...indexGroup);
+      }
+    }
+    return indexGroups;
   }
 
   async load() {
@@ -219,22 +244,44 @@ class LoadSpritesExtension extends Autodesk.Viewing.Extension {
     return true;
   }
 
-  renderSprites(dbId) {
+  renderSprites(dbId, indexGroups) {
     let DataVizCore = Autodesk.DataVisualization.Core;
-    let style = this.pointStyles[0];
     this.dataVizExtn.removeAllViewables();
     this.viewableData = new DataVizCore.ViewableData();
     this.viewableData.spriteSize = 32;
 
-    for(let position of spritesPotisions){
+    for(let indexGroup of indexGroups){
       dbId++;
-      let viewable = new DataVizCore.SpriteViewable(position, style, dbId);
+      let spritePoint;
+      let spriteStyle;
+      if(indexGroup.length > 1){
+        spritePoint = this.findMiddlePoint(indexGroup);
+        spriteStyle = this.pointStyles[1];
+      }
+      else{
+        spritePoint = spritesPotisions[indexGroup[0]];
+        spriteStyle = this.pointStyles[0];
+      }
+      let viewable = new DataVizCore.SpriteViewable(spritePoint, spriteStyle, dbId);
       this.viewableData.addViewable(viewable);
     }
+    // for(let position of spritesPotisions){
+    //   dbId++;
+    //   let viewable = new DataVizCore.SpriteViewable(position, onePointStyle, dbId);
+    //   this.viewableData.addViewable(viewable);
+    // }
     
     this.viewableData.finish().then(() => {
       this.dataVizExtn.addViewables(this.viewableData);
     });
+  }
+
+  findMiddlePoint(indexGroup){
+    let positions = indexGroup.map(index => spritesPotisions[index]);
+    let middleX = positions.map(p => p.x).reduce((acc, cur) => acc + cur, 0)/indexGroup.length;
+    let middleY = positions.map(p => p.y).reduce((acc, cur) => acc + cur, 0)/indexGroup.length;
+    let middleZ = positions.map(p => p.z).reduce((acc, cur) => acc + cur, 0)/indexGroup.length;
+    return {x: middleX, y: middleY, z: middleZ};
   }
 
   async prepareDataViz() {
@@ -246,11 +293,14 @@ class LoadSpritesExtension extends Autodesk.Viewing.Extension {
 
     let pointsColor = new THREE.Color(0xffffff);
 
-    let firstPointIconUrl = "https://img.icons8.com/ios/50/null/1-circle.png";
+    let onePointIconUrl = "https://img.icons8.com/ios/50/null/1-circle.png";
+    let multiplePointsIconUrl = "https://img.icons8.com/external-vitaliy-gorbachev-lineal-vitaly-gorbachev/50/null/external-numbers-support-vitaliy-gorbachev-lineal-vitaly-gorbachev.png";
 
-    let firstStyle = new DataVizCore.ViewableStyle(viewableType, pointsColor, firstPointIconUrl);
+    let onePointStyle = new DataVizCore.ViewableStyle(viewableType, pointsColor, onePointIconUrl);
+    let multiplePointsStyle = new DataVizCore.ViewableStyle(viewableType, pointsColor, multiplePointsIconUrl);
     this.pointStyles = [
-      firstStyle
+      onePointStyle,
+      multiplePointsStyle
     ];
   }
 
