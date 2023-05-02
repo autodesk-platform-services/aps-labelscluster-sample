@@ -28,8 +28,8 @@ class LoadSpritesExtension extends Autodesk.Viewing.Extension {
     let indexGroups = [];
     for (let i = 0; i < spritesPositions.length; i++) {
       let currentPosition = this.viewer.worldToClient(spritesPositions[i]);
-      const currentIndexRow = Math.floor(currentPosition.x / this.treshold);
-      const currentIndexColumn = Math.floor(currentPosition.y / this.treshold);
+      const currentIndexColumn = Math.floor(currentPosition.x / this.treshold);
+      const currentIndexRow = Math.floor(currentPosition.y / this.treshold);
       if (!indexGroups[currentIndexRow]) {
         indexGroups[currentIndexRow] = [];
       }
