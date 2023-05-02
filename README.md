@@ -6,9 +6,7 @@ This sample demonstrates how to group sprites to improve visualization in contex
 
 ### Introduction
 
-When we start adding labels to our scenes, we might get to a point where it gets too crowded.
-It is at this point thet we need to think of a way to improve visualization without limiting the amount of annotations added to the scene.
-This is the goal of this sample. It shows a way to achieve that grouping sprites depending of the camera orientation.
+When we start adding labels to our scenes, we might get to a point where it gets too crowded. It is at this point that we need to think of a way to improve visualization without limiting the number of annotations added to the scene. This is the goal of this sample. It shows a way to achieve that grouping of sprites depending on the camera orientation.
 
 ![thumbnail](./assets/thumbnail.gif)
 
