@@ -3,7 +3,7 @@ class LoadSpritesExtension extends Autodesk.Viewing.Extension {
     super(viewer, options);
     this._button = null;
     //treshold in pixels
-    this.treshold = 40;
+    this.treshold = 80;
     this._onObjectTreeCreated = (ev) => this.onModelLoaded(ev.model);
   }
 
