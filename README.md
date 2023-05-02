@@ -1,22 +1,22 @@
-# Group sprites sample
+# Group Labels sample
 
 This sample demonstrates how to group sprites to improve visualization in context of the APS Viewer.
 
-### DEMO: https://joaomartins-callmejohn.github.io/grouplabels/
+### DEMO: https://autodesk-platform-services.github.io/aps-grouplabels-sample/
 
 ### Introduction
 
 When we start adding labels to our scenes, we might get to a point where it gets too crowded.
-It is at this point thet we need to think pf a way to improve visualization without limiting the amount of annotations added to the scene.
+It is at this point thet we need to think of a way to improve visualization without limiting the amount of annotations added to the scene.
 This is the goal of this sample. It shows a way to achieve that grouping sprites depending of the camera orientation.
 
 ![thumbnail](./assets/thumbnail.gif)
 
 ### The approach
 
-We choose to implement this approach with sprites, but the same logic can also be aplied to html markups or any other type of annotation, as long as it relies in points (in the scene or in the client).
+We choose to implement this approach with [sprites](https://aps.autodesk.com/en/docs/dataviz/v1/developers_guide/examples/sprites/), but the same logic can also be aplied to html markups or any other type of annotation, as long as it relies in points (in the scene or in the client).
 With sprites, we can easily specify a size for our labels (in pixels), so they can adjust themselves based on the camera orientation (looking bigger in comparision with our scene elements).
-So, to summarize, we'll take advantage of [sprites](https://aps.autodesk.com/en/docs/dataviz/v1/developers_guide/examples/sprites/) to add our labels and adjust our scene in a way thet it doesn't get too populated with labels, grouping them when necessary.
+So, to summarize, we'll take advantage of sprites to add our labels and adjust our scene in a way thet it doesn't get too populated with labels, grouping them when necessary.
 
 ### The math behind the scene
 
@@ -33,35 +33,41 @@ This can be achieved with the help of viewer's [worldToClient](https://aps.autod
 
 #### Grouping the points
 
-With that, we can go recursivelly through each point to separate them into groups that are close to each other (depending on the defined treshold).
+For this part performance matters, since we'll be grouping on a camera change basis.
+We can loop through the points to separate them into groups that are close to each other (depending on the defined treshold).
+The logic works like we're dividing the screen into a grid of regions with the specified width and height. Inside any area, we can have only one single label being displayed (representing either a group or a single sprite).
 
-![closepoints](./assets/tresholdradius.png)
+![closepoints](./assets/tresholdgrid.png)
 
 In this sample we're doing that with the help of the snippet below:
 
 ```js
-findIndexGroups(){
+findIndexGroups() {
   let indexGroups = [];
-  let indexesTaken = [];
-  for(let i = 0; i <  spritesPositions.length; i++){
-    if(!indexesTaken.includes(i)){
-      let currentPosition = this.viewer.worldToClient( spritesPositions[i]);
-      let notTakenPoints =  spritesPositions.filter(p => !indexesTaken.includes( spritesPositions.indexOf(p)));
-      let pointsGroup = notTakenPoints.filter(p => this.viewer.worldToClient(p).distanceTo(currentPosition) < this.treshold);
-      let indexGroup = pointsGroup.map(p =>  spritesPositions.indexOf(p));
-      indexGroups.push(indexGroup);
-      indexesTaken.push(...indexGroup);
+  for (let i = 0; i < spritesPositions.length; i++) {
+    let currentPosition = this.viewer.worldToClient(spritesPositions[i]);
+    const currentIndexColumn = Math.floor(currentPosition.x / this.treshold);
+    const currentIndexRow = Math.floor(currentPosition.y / this.treshold);
+    if (!indexGroups[currentIndexRow]) {
+      indexGroups[currentIndexRow] = [];
     }
+    if (!indexGroups[currentIndexRow][currentIndexColumn]) {
+      indexGroups[currentIndexRow][currentIndexColumn] = [];
+    }
+    indexGroups[currentIndexRow][currentIndexColumn].push(i);
   }
-  return indexGroups;
+  return indexGroups.flat();
 }
 ```
 
-Where `spritesPositions` represent the array of 3D points.
+The `findIndexGroups` method returns an array of arrays with indexes that should be displayed as a single label.
+Dividing a point clientX by the area width we can know in which column this point is located.
+Dividing a point clientY by the area heigth we can know in which row this point is located.
+Then we can add this point (in this case just its index) into the proper group.
 
-Once the close points are defined, we can render themm using a specific icon for groups, while we use a different one for individual points.
+Once the groups are defined, we can render themm using a specific icon for groups, while we use a different one for individual points.
 
-![groupedpoints](./assets/singlegroup.png)
+![groupedpoints](./assets/areagroup.png)
 
 We handle this part with the snippet below:
 
