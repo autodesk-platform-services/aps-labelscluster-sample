@@ -13,31 +13,32 @@ class LoadSpritesExtension extends Autodesk.Viewing.Extension {
     this.viewer.addEventListener(Autodesk.Viewing.CAMERA_CHANGE_EVENT, this.groupAndRenderSprites.bind(this));
   }
 
-  groupAndRenderSprites(){
+  groupAndRenderSprites() {
     let indexGroups;
-    if(this._button.getState() == Autodesk.Viewing.UI.Button.State.ACTIVE){
+    if (this._button.getState() == Autodesk.Viewing.UI.Button.State.ACTIVE) {
       indexGroups = this.findIndexGroups();
     }
-    else{
-      indexGroups =  spritesPositions.map((p, i) => [i]);
+    else {
+      indexGroups = spritesPositions.map((p, i) => [i]);
     }
     this.renderSprites(9999, indexGroups);
   }
 
-  findIndexGroups(){
+  findIndexGroups() {
     let indexGroups = [];
-    let indexesTaken = [];
-    for(let i = 0; i <  spritesPositions.length; i++){
-      if(!indexesTaken.includes(i)){
-        let currentPosition = this.viewer.worldToClient( spritesPositions[i]);
-        let notTakenPoints =  spritesPositions.filter(p => !indexesTaken.includes( spritesPositions.indexOf(p)));
-        let pointsGroup = notTakenPoints.filter(p => this.viewer.worldToClient(p).distanceTo(currentPosition) < this.treshold);
-        let indexGroup = pointsGroup.map(p =>  spritesPositions.indexOf(p));
-        indexGroups.push(indexGroup);
-        indexesTaken.push(...indexGroup);
+    for (let i = 0; i < spritesPositions.length; i++) {
+      let currentPosition = this.viewer.worldToClient(spritesPositions[i]);
+      const currentIndexRow = Math.floor(currentPosition.x / this.treshold);
+      const currentIndexColumn = Math.floor(currentPosition.y / this.treshold);
+      if (!indexGroups[currentIndexRow]) {
+        indexGroups[currentIndexRow] = [];
       }
+      if (!indexGroups[currentIndexRow][currentIndexColumn]) {
+        indexGroups[currentIndexRow][currentIndexColumn] = [];
+      }
+      indexGroups[currentIndexRow][currentIndexColumn].push(i);
     }
-    return indexGroups;
+    return indexGroups.flat();
   }
 
   async load() {
@@ -51,33 +52,33 @@ class LoadSpritesExtension extends Autodesk.Viewing.Extension {
     this.viewableData = new DataVizCore.ViewableData();
     this.viewableData.spriteSize = 32;
 
-    for(let indexGroup of indexGroups){
+    for (let indexGroup of indexGroups) {
       dbId++;
       let spritePoint;
       let spriteStyle;
-      if(indexGroup.length > 1){
+      if (indexGroup.length > 1) {
         spritePoint = this.findMiddlePoint(indexGroup);
         spriteStyle = this.pointStyles[1];
       }
-      else{
-        spritePoint =  spritesPositions[indexGroup[0]];
+      else {
+        spritePoint = spritesPositions[indexGroup[0]];
         spriteStyle = this.pointStyles[0];
       }
       let viewable = new DataVizCore.SpriteViewable(spritePoint, spriteStyle, dbId);
       this.viewableData.addViewable(viewable);
     }
-    
+
     this.viewableData.finish().then(() => {
       this.dataVizExtn.addViewables(this.viewableData);
     });
   }
 
-  findMiddlePoint(indexGroup){
-    let positions = indexGroup.map(index =>  spritesPositions[index]);
-    let middleX = positions.map(p => p.x).reduce((acc, cur) => acc + cur, 0)/indexGroup.length;
-    let middleY = positions.map(p => p.y).reduce((acc, cur) => acc + cur, 0)/indexGroup.length;
-    let middleZ = positions.map(p => p.z).reduce((acc, cur) => acc + cur, 0)/indexGroup.length;
-    return {x: middleX, y: middleY, z: middleZ};
+  findMiddlePoint(indexGroup) {
+    let positions = indexGroup.map(index => spritesPositions[index]);
+    let middleX = positions.map(p => p.x).reduce((acc, cur) => acc + cur, 0) / indexGroup.length;
+    let middleY = positions.map(p => p.y).reduce((acc, cur) => acc + cur, 0) / indexGroup.length;
+    let middleZ = positions.map(p => p.z).reduce((acc, cur) => acc + cur, 0) / indexGroup.length;
+    return { x: middleX, y: middleY, z: middleZ };
   }
 
   async prepareDataViz() {
