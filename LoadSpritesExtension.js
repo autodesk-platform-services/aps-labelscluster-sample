@@ -10,7 +10,7 @@ class LoadSpritesExtension extends Autodesk.Viewing.Extension {
   async onModelLoaded(model) {
     this.dataVizExtn = await this.viewer.getExtension("Autodesk.DataVisualization");
     await this.prepareDataViz();
-    this.viewer.addEventListener(Autodesk.Viewing.CAMERA_CHANGE_EVENT, this.groupAndRenderSprites.bind(this));
+    this.viewer.addEventListener(Autodesk.Viewing.CAMERA_TRANSITION_COMPLETED, this.groupAndRenderSprites.bind(this));
   }
 
   groupAndRenderSprites() {
