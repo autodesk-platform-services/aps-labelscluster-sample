@@ -2,6 +2,7 @@ class LoadSpritesExtension extends Autodesk.Viewing.Extension {
   constructor(viewer, options) {
     super(viewer, options);
     this._button = null;
+    this._changeInProgress = false;
     //treshold in pixels
     this.treshold = 80;
     this._onObjectTreeCreated = (ev) => this.onModelLoaded(ev.model);
@@ -10,18 +11,28 @@ class LoadSpritesExtension extends Autodesk.Viewing.Extension {
   async onModelLoaded(model) {
     this.dataVizExtn = await this.viewer.getExtension("Autodesk.DataVisualization");
     await this.prepareDataViz();
-    this.viewer.addEventListener(Autodesk.Viewing.CAMERA_TRANSITION_COMPLETED, this.groupAndRenderSprites.bind(this));
+    this.viewer.addEventListener(Autodesk.Viewing.CAMERA_CHANGE_EVENT, this.groupAndRenderSprites.bind(this));
   }
 
   groupAndRenderSprites() {
-    let indexGroups;
-    if (this._button.getState() == Autodesk.Viewing.UI.Button.State.ACTIVE) {
-      indexGroups = this.findIndexGroups();
+    if(!this._changeInProgress){
+      this._changeInProgress = true;
+      this.scheduleChange();
     }
-    else {
-      indexGroups = spritesPositions.map((p, i) => [i]);
-    }
-    this.renderSprites(9999, indexGroups);
+  }
+
+  scheduleChange(){
+    setTimeout(() => {
+      let indexGroups;
+      if (this._button.getState() == Autodesk.Viewing.UI.Button.State.ACTIVE) {
+        indexGroups = this.findIndexGroups();
+      }
+      else {
+        indexGroups = spritesPositions.map((p, i) => [i]);
+      }
+      this.renderSprites(9999, indexGroups);
+      this._changeInProgress = false;
+    }, 200);
   }
 
   findIndexGroups() {
