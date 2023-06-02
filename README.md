@@ -112,3 +112,11 @@ We need to repeat this process every time the camera changes, so we're basically
 The result from that can be seen by the gif below:
 
 ![result](./assets/groupingsprites.gif)
+
+## License
+
+This sample is licensed under the terms of the [MIT License](http://opensource.org/licenses/MIT). Please see the [LICENSE](LICENSE) file for full details.
+
+## Written by
+
+João Martins [in/jpornelas]([http://twitter.com/JooPaulodeOrne2](https://www.linkedin.com/in/jpornelas/)), [APS Partner Development](http://aps.autodesk.com)
