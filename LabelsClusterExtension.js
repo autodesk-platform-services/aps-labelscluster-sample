@@ -102,7 +102,8 @@ class LabelsClusterExtension extends Autodesk.Viewing.Extension {
     let pointsColor = new THREE.Color(0xffffff);
 
     let onePointIconUrl = "https://img.icons8.com/ios/50/null/1-circle.png";
-    let multiplePointsIconUrl = "https://img.icons8.com/external-vitaliy-gorbachev-lineal-vitaly-gorbachev/50/null/external-numbers-support-vitaliy-gorbachev-lineal-vitaly-gorbachev.png";
+    // let multiplePointsIconUrl = "https://img.icons8.com/external-vitaliy-gorbachev-lineal-vitaly-gorbachev/50/null/external-numbers-support-vitaliy-gorbachev-lineal-vitaly-gorbachev.png";
+    let multiplePointsIconUrl = "https://raw.githubusercontent.com/autodesk-platform-services/aps-labelscluster-sample/main/assets/cluster.svg";
 
     let onePointStyle = new DataVizCore.ViewableStyle(viewableType, pointsColor, onePointIconUrl);
     let multiplePointsStyle = new DataVizCore.ViewableStyle(viewableType, pointsColor, multiplePointsIconUrl);
