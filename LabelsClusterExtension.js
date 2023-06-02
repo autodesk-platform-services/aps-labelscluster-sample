@@ -1,4 +1,4 @@
-class LoadSpritesExtension extends Autodesk.Viewing.Extension {
+class LabelsClusterExtension extends Autodesk.Viewing.Extension {
   constructor(viewer, options) {
     super(viewer, options);
     this._button = null;
@@ -11,34 +11,34 @@ class LoadSpritesExtension extends Autodesk.Viewing.Extension {
   async onModelLoaded(model) {
     this.dataVizExtn = await this.viewer.getExtension("Autodesk.DataVisualization");
     await this.prepareDataViz();
-    this.viewer.addEventListener(Autodesk.Viewing.CAMERA_CHANGE_EVENT, this.groupAndRenderSprites.bind(this));
+    this.viewer.addEventListener(Autodesk.Viewing.CAMERA_CHANGE_EVENT, this.groupAndRenderLabels.bind(this));
   }
 
-  groupAndRenderSprites() {
-    if(!this._changeInProgress){
+  groupAndRenderLabels() {
+    if (!this._changeInProgress) {
       this._changeInProgress = true;
       this.scheduleChange();
     }
   }
 
-  scheduleChange(){
+  scheduleChange() {
     setTimeout(() => {
       let indexGroups;
       if (this._button.getState() == Autodesk.Viewing.UI.Button.State.ACTIVE) {
         indexGroups = this.findIndexGroups();
       }
       else {
-        indexGroups = spritesPositions.map((p, i) => [i]);
+        indexGroups = document.labelsJSON.labelsPositions.map((p, i) => [i]);
       }
-      this.renderSprites(9999, indexGroups);
+      this.replaceLabels(9999, indexGroups);
       this._changeInProgress = false;
     }, 200);
   }
 
   findIndexGroups() {
     let indexGroups = [];
-    for (let i = 0; i < spritesPositions.length; i++) {
-      let currentPosition = this.viewer.worldToClient(spritesPositions[i]);
+    for (let i = 0; i < document.labelsJSON.labelsPositions.length; i++) {
+      let currentPosition = this.viewer.worldToClient(document.labelsJSON.labelsPositions[i]);
       const currentIndexColumn = Math.floor(currentPosition.x / this.treshold);
       const currentIndexRow = Math.floor(currentPosition.y / this.treshold);
       if (!indexGroups[currentIndexRow]) {
@@ -57,7 +57,7 @@ class LoadSpritesExtension extends Autodesk.Viewing.Extension {
     return true;
   }
 
-  renderSprites(dbId, indexGroups) {
+  replaceLabels(dbId, indexGroups) {
     let DataVizCore = Autodesk.DataVisualization.Core;
     this.dataVizExtn.removeAllViewables();
     this.viewableData = new DataVizCore.ViewableData();
@@ -72,7 +72,7 @@ class LoadSpritesExtension extends Autodesk.Viewing.Extension {
         spriteStyle = this.pointStyles[1];
       }
       else {
-        spritePoint = spritesPositions[indexGroup[0]];
+        spritePoint = document.labelsJSON.labelsPositions[indexGroup[0]];
         spriteStyle = this.pointStyles[0];
       }
       let viewable = new DataVizCore.SpriteViewable(spritePoint, spriteStyle, dbId);
@@ -85,7 +85,7 @@ class LoadSpritesExtension extends Autodesk.Viewing.Extension {
   }
 
   findMiddlePoint(indexGroup) {
-    let positions = indexGroup.map(index => spritesPositions[index]);
+    let positions = indexGroup.map(index => document.labelsJSON.labelsPositions[index]);
     let middleX = positions.map(p => p.x).reduce((acc, cur) => acc + cur, 0) / indexGroup.length;
     let middleY = positions.map(p => p.y).reduce((acc, cur) => acc + cur, 0) / indexGroup.length;
     let middleZ = positions.map(p => p.z).reduce((acc, cur) => acc + cur, 0) / indexGroup.length;
@@ -121,7 +121,7 @@ class LoadSpritesExtension extends Autodesk.Viewing.Extension {
   }
 
   onToolbarCreated() {
-    this._button = this.createToolbarButton('groupsprites-button', 'https://img.icons8.com/ios/30/null/combine.png', 'Group Sprites');
+    this._button = this.createToolbarButton('labelscluster-button', 'https://img.icons8.com/ios/30/null/combine.png', 'Labels Cluster');
     this._button.onClick = () => {
       if (this._button.getState() == Autodesk.Viewing.UI.Button.State.ACTIVE) {
         this._button.setState(Autodesk.Viewing.UI.Button.State.INACTIVE);
@@ -132,9 +132,9 @@ class LoadSpritesExtension extends Autodesk.Viewing.Extension {
   }
 
   createToolbarButton(buttonId, buttonIconUrl, buttonTooltip) {
-    let group = this.viewer.toolbar.getControl('coordinates-toolbar-group');
+    let group = this.viewer.toolbar.getControl('labels-toolbar-group');
     if (!group) {
-      group = new Autodesk.Viewing.UI.ControlGroup('coordinates-toolbar-group');
+      group = new Autodesk.Viewing.UI.ControlGroup('labels-toolbar-group');
       this.viewer.toolbar.addControl(group);
     }
     const button = new Autodesk.Viewing.UI.Button(buttonId);
@@ -151,9 +151,9 @@ class LoadSpritesExtension extends Autodesk.Viewing.Extension {
   }
 
   removeToolbarButton(button) {
-    const group = this.viewer.toolbar.getControl('coordinates-toolbar-group');
+    const group = this.viewer.toolbar.getControl('labels-toolbar-group');
     group.removeControl(button);
   }
 }
 
-Autodesk.Viewing.theExtensionManager.registerExtension('LoadSpritesExtension', LoadSpritesExtension);
+Autodesk.Viewing.theExtensionManager.registerExtension('LabelsClusterExtension', LabelsClusterExtension);
