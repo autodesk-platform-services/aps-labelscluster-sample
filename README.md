@@ -1,4 +1,4 @@
-# Group Labels sample
+# Labels Cluster Sample
 
 
 ![Platforms](https://img.shields.io/badge/platform-Windows|MacOS-lightgray.svg)
