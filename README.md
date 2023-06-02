@@ -9,7 +9,7 @@
 
 This sample demonstrates how to group sprites to improve visualization in context of the APS Viewer.
 
-### DEMO: https://autodesk-platform-services.github.io/aps-grouplabels-sample/
+### DEMO: [https://autodesk-platform-services.github.io/aps-grouplabels-sample/](https://autodesk-platform-services.github.io/aps-labelscluster-sample/)
 
 ### Introduction
 
